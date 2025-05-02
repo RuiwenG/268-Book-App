@@ -10,18 +10,19 @@ class BookBloc extends Bloc<BookEvent, BookState>{
   // fake description
   String textFake = lorem();
 
-  BookBloc(): super(BookListState()){
+  BookBloc(): super(BookListState(books: [], sortedByAuthor: true)){
     on<LoadBooks>((event, emit) {
       _init();
+      _sortAndEmit(emit, sortByAuthor: true);
     });
     on<FilterBooks>((event, emit){
       // this is the function to filter books based on the title /author
+      _sortAndEmit(emit, sortByAuthor: event.sortByAuthor);
     });
     on<ShowBookDetail>((event, emit){
       // this function shows the details of the book
+      emit(BookDetailState(event.book));
     });
-    
-
   }
 
 void _init() {
@@ -35,4 +36,11 @@ void _init() {
     Book("Don't look back", "Isaac Nelson", textFake, 'assets/Book=7.png'),
   ]);
 }
+  // the helper function that sorts book based on author or title
+  void _sortAndEmit(Emitter<BookState> emit, {required bool sortByAuthor}) {
+    List<Book> sorted = List.from(_allBooks);
+    sorted.sort((a, b) =>
+        sortByAuthor ? a.author.compareTo(b.author) : a.title.compareTo(b.title));
+    emit(BookListState(books: sorted, sortedByAuthor: sortByAuthor));
+  }
 }
