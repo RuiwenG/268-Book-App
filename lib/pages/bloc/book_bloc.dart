@@ -32,7 +32,7 @@ void _init() {
     Book("A Clockwork Orange", "Anthony Burgess", textFake, 'assets/Book=3.png'),
     Book("The Imperfections of Memory", "Angelina Aludo" ,textFake, 'assets/Book=4.png'),
     Book("Big Deal", "Hisham Al Gurg", textFake, 'assets/Book=5.png'),
-    Book("James and the Giant Peach", "Roald Dahl", textFake, 'assets/Book=6.png'),
+    Book("James and the Giant Peach", "Roald Dahl", textFake, 'assets/Book=6.jpg'),
     Book("Don't look back", "Isaac Nelson", textFake, 'assets/Book=7.png'),
   ]);
 }

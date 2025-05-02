@@ -27,7 +27,7 @@ class BookHome extends StatelessWidget{
         ),
       ],
     ),
-body: BlocBuilder<BookBloc, BookState>(
+    body: BlocBuilder<BookBloc, BookState>(
         builder: (context, state) {
           if (state is BookListState) {
             return ListView.builder(
@@ -56,7 +56,8 @@ body: BlocBuilder<BookBloc, BookState>(
               body: BookDetailWidget(book: state.book),
             );
           }
-          return const Center(child: CircularProgressIndicator());
+          else {return const Center(child: CircularProgressIndicator());
+          }
         },
       ),
     );
