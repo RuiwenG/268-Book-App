@@ -11,47 +11,54 @@ class BookHome extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book Club"),
-        actions: [
-          // adds back button
-        ],
-      ),
-      body: BlocBuilder<BookBloc, BookState> (
-        builder: (context, state){
-          if (state is BookListState){
+    appBar: AppBar(
+      title: const Text("Book Club"),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.sort_by_alpha),
+          onPressed: () {
+            final currentState = context.read<BookBloc>().state;
+            if (currentState is BookListState) {
+              context.read<BookBloc>().add(
+                    FilterBooks(sortByAuthor: !currentState.sortedByAuthor),
+                  );
+            }
+          },
+        ),
+      ],
+    ),
+body: BlocBuilder<BookBloc, BookState>(
+        builder: (context, state) {
+          if (state is BookListState) {
             return ListView.builder(
               itemCount: state.books.length,
-              itemBuilder: (context, index){
+              itemBuilder: (context, index) {
                 final book = state.books[index];
                 return ListTile(
-                  leading: Image.network(book.imageUrl, width : 50),
-                  title: Text (book.title),
-                  onTap: (){
+                  leading: Image.network(book.imageUrl, width: 50),
+                  title: Text(book.title),
+                  subtitle: Text(book.author),
+                  onTap: () {
                     context.read<BookBloc>().add(ShowBookDetail(book));
                   },
                 );
               },
             );
-          }
-          if (state is BookDetailState) {
-            return BookDetailWidget(book: state.book);
-          }
-          else if (state is BookDetailState){
+          } else if (state is BookDetailState) {
             return Scaffold(
               appBar: AppBar(
                 leading: IconButton(
-                  onPressed:() => context.read<BookBloc>().add(BackToList()), 
-                  icon: const Icon(Icons.arrow_back)),
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => context.read<BookBloc>().add(BackToList()),
+                ),
+                title: const Text('Book Detail'),
               ),
+              body: BookDetailWidget(book: state.book),
             );
-
           }
+          return const Center(child: CircularProgressIndicator());
         },
-      )
-
-      
+      ),
     );
   }
-
 }
