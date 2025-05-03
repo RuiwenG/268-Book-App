@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/book_bloc.dart';
 import 'widgets/book_detail.dart';
+import 'book.dart';
 
 class BookHome extends StatelessWidget {
   const BookHome({super.key});
@@ -12,7 +13,6 @@ class BookHome extends StatelessWidget {
       create: (context) => BookBloc()..add(LoadBooks()),
       child: BlocBuilder<BookBloc, BookState>(
         builder: (context, state) {
-          // Shared Scaffold
           return Scaffold(
             appBar: AppBar(
               title: Text(
@@ -30,40 +30,35 @@ class BookHome extends StatelessWidget {
             ),
             body: switch (state) {
               BookListState listState => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
-                      children: const [
-                        Text('sort by'),
+                      children: [
+                        Text(
+                          'Sort by',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         SizedBox(width: 8),
                         FilterButton(label: 'Author', sortByAuthor: true),
-                        SizedBox(width: 16),
+                        SizedBox(width: 8),
                         FilterButton(label: 'Title', sortByAuthor: false),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: listState.books.length,
-                      itemBuilder: (context, index) {
-                        final book = listState.books[index];
-                        return ListTile(
-                          leading: Image.asset(
-                            book.imageUrl,
-                            width: 50,
-                            height: 75,
-                          ),
-                          title: Text(book.title),
-                          subtitle: Text(book.author),
-                          onTap: () {
-                            context.read<BookBloc>().add(ShowBookDetail(book));
-                          },
-                        );
-                      },
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Books',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  BookListView(books: listState.books), // Using the new widget
                 ],
               ),
               BookDetailState detailState => BookDetailWidget(
@@ -73,6 +68,44 @@ class BookHome extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class BookListView extends StatelessWidget {
+  final List<Book> books;
+
+  const BookListView({super.key, required this.books});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      // Constrain the height of the Row
+      height: 150, // Match the height of your book items
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Align items to the top
+          children:
+              books.map((book) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      context.read<BookBloc>().add(ShowBookDetail(book));
+                    },
+                    child: SizedBox(
+                      width: 100,
+                      height: 150,
+                      child: Image.asset(book.imageUrl, fit: BoxFit.cover),
+                    ),
+                  ),
+                );
+              }).toList(),
+        ),
       ),
     );
   }
