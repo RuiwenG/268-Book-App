@@ -1,65 +1,86 @@
-import 'package:book_app/pages/bloc/book_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../pages/widgets/book_detail.dart';
+import 'bloc/book_bloc.dart';
+import 'widgets/book_detail.dart';
+import 'book.dart';
 
-class BookHome extends StatelessWidget{
+class BookHome extends StatelessWidget {
   const BookHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-    appBar: AppBar(
-      title: const Text("Book Club"),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.sort_by_alpha),
-          onPressed: () {
-            final currentState = context.read<BookBloc>().state;
-            if (currentState is BookListState) {
-              context.read<BookBloc>().add(
-                    FilterBooks(sortByAuthor: !currentState.sortedByAuthor),
-                  );
+    return BlocProvider(
+      create: (context) => BookBloc()..add(LoadBooks()),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Book Club')),
+        body: BlocBuilder<BookBloc, BookState>(
+          builder: (context, state) {
+            if (state is BookListState) {
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FilterButton(label: 'Sort by Author', sortByAuthor: true),
+                      const SizedBox(width: 16),
+                      FilterButton(label: 'Sort by Title', sortByAuthor: false),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.books.length,
+                      itemBuilder: (context, index) {
+                        final book = state.books[index];
+                        return ListTile(
+                          leading: Image.asset(book.imageUrl, width: 50, height: 75),
+                          title: Text(book.title),
+                          subtitle: Text(book.author),
+                          onTap: () {
+                            context.read<BookBloc>().add(ShowBookDetail(book));
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            } else if (state is BookDetailState) {
+              return Column(
+                children: [
+                  Expanded(child: BookDetailWidget(book: state.book)),
+                  TextButton(
+                    onPressed: () => context.read<BookBloc>().add(LoadBooks()),
+                    child: const Text('Back to List'),
+                  ),
+                ],
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
             }
           },
         ),
-      ],
-    ),
-    body: BlocBuilder<BookBloc, BookState>(
-        builder: (context, state) {
-          if (state is BookListState) {
-            return ListView.builder(
-              itemCount: state.books.length,
-              itemBuilder: (context, index) {
-                final book = state.books[index];
-                return ListTile(
-                  leading: Image.network(book.imageUrl, width: 50),
-                  title: Text(book.title),
-                  subtitle: Text(book.author),
-                  onTap: () {
-                    context.read<BookBloc>().add(ShowBookDetail(book));
-                  },
-                );
-              },
-            );
-          } else if (state is BookDetailState) {
-            return Scaffold(
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.read<BookBloc>().add(BackToList()),
-                ),
-                title: const Text('Book Detail'),
-              ),
-              body: BookDetailWidget(book: state.book),
-            );
-          }
-          else {return const Center(child: CircularProgressIndicator());
-          }
-        },
       ),
+    );
+  }
+}
+
+class FilterButton extends StatelessWidget {
+  final String label;
+  final bool sortByAuthor;
+
+  const FilterButton({
+    super.key,
+    required this.label,
+    required this.sortByAuthor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        context.read<BookBloc>().add(FilterBooks(sortByAuthor: sortByAuthor));
+      },
+      child: Text(label),
     );
   }
 }

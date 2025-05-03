@@ -19,10 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: BlocProvider(
-        create: (context) => BookBloc()..add(LoadBooks()),
-        child: const BookHome(),
-      ),
+      home: const BookHome(),
     );
   }
 }

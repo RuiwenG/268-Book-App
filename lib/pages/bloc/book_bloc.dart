@@ -26,6 +26,7 @@ class BookBloc extends Bloc<BookEvent, BookState>{
   }
 
 void _init() {
+  _allBooks.clear();
   _allBooks.addAll([
     Book("Carmer and Grit", "Sarah Jean Horwitz", textFake, 'assets/Book=1.png'),
     Book("Little Gods", "Meng Jin", textFake, 'assets/Book=2.png'),
