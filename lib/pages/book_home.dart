@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/book_bloc.dart';
 import 'widgets/book_detail.dart';
-import 'book.dart';
 
 class BookHome extends StatelessWidget {
   const BookHome({super.key});
@@ -11,28 +10,51 @@ class BookHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => BookBloc()..add(LoadBooks()),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Book Club')),
-        body: BlocBuilder<BookBloc, BookState>(
-          builder: (context, state) {
-            if (state is BookListState) {
-              return Column(
+      child: BlocBuilder<BookBloc, BookState>(
+        builder: (context, state) {
+          // Shared Scaffold
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                state is BookDetailState ? state.book.title : 'Book Club',
+              ),
+              leading:
+                  state is BookDetailState
+                      ? IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () {
+                          context.read<BookBloc>().add(LoadBooks());
+                        },
+                      )
+                      : null,
+            ),
+            body: switch (state) {
+              BookListState listState => Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FilterButton(label: 'Sort by Author', sortByAuthor: true),
-                      const SizedBox(width: 16),
-                      FilterButton(label: 'Sort by Title', sortByAuthor: false),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: const [
+                        Text('sort by'),
+                        SizedBox(width: 8),
+                        FilterButton(label: 'Author', sortByAuthor: true),
+                        SizedBox(width: 16),
+                        FilterButton(label: 'Title', sortByAuthor: false),
+                      ],
+                    ),
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: state.books.length,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: listState.books.length,
                       itemBuilder: (context, index) {
-                        final book = state.books[index];
+                        final book = listState.books[index];
                         return ListTile(
-                          leading: Image.asset(book.imageUrl, width: 50, height: 75),
+                          leading: Image.asset(
+                            book.imageUrl,
+                            width: 50,
+                            height: 75,
+                          ),
                           title: Text(book.title),
                           subtitle: Text(book.author),
                           onTap: () {
@@ -43,22 +65,14 @@ class BookHome extends StatelessWidget {
                     ),
                   ),
                 ],
-              );
-            } else if (state is BookDetailState) {
-              return Column(
-                children: [
-                  Expanded(child: BookDetailWidget(book: state.book)),
-                  TextButton(
-                    onPressed: () => context.read<BookBloc>().add(LoadBooks()),
-                    child: const Text('Back to List'),
-                  ),
-                ],
-              );
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
+              ),
+              BookDetailState detailState => BookDetailWidget(
+                book: detailState.book,
+              ),
+              _ => const Center(child: CircularProgressIndicator()),
+            },
+          );
+        },
       ),
     );
   }
